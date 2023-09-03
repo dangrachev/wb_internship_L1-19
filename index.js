@@ -25,7 +25,7 @@ function getVKPosts() {
             v: 5.131
         },
         (res) => {
-            if (res.response.ok) {
+            if (res.response) {
                 const newPosts = res.response.items;
 
                 // Проходимся по newPosts и создаем шаблон для каждого поста
