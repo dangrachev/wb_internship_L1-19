@@ -60,17 +60,17 @@ function getVKPosts() {
                         <div class="vk-widget_community-img">
                             <img src=${community.img} />
                         </div>
-                        
-                        <div class="vk-widget_community-name">${community.name}</div>
-                        <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                        <div>
+                            <div class="vk-widget_community-name">${community.name}</div>
+                            <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                        </div>
                     </div>
                     
                     <div class="vk-widget_post-content">
                         <div class="vk-widget_post-message">${post.text}</div>
                         
                         <div class="vk-widget_post-media">
-                            ${post.attachments[0]['photo']} && 
-                                <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url} />
+                            <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url} />
                         </div>
                     </div>
                     
@@ -117,8 +117,8 @@ const observer = new IntersectionObserver(posts => {
 
 // Сохраняем посты в localstorage
 function savePostsToLocalstorage() {
-    localStorage.setItem('posts', JSON.stringify(posts)); //! сохраняем массив постов в localStorage
-    localStorage.setItem('offset', offset); //! сохраняем смещение в localStorage
+    localStorage.setItem('posts', JSON.stringify(posts));
+    localStorage.setItem('offset', offset);
 }
 
 // Функция подгружает кэшированные посты
