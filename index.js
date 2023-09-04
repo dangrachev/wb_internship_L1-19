@@ -1,8 +1,12 @@
-const vkWidgetBlock = document.querySelector('.vk-widget-wrapper');
 const vkWidgetPosts = document.querySelector('.vk-widget_posts');
 
 // Вытаскиваем токен после авторизации
 const _token = window.location.hash.split("=")[1].split("&")[0]
+
+const community_id = 136363489;
+
+// Объект сообщества
+let community;
 
 // Массив постов для localstorage
 let posts = [];
@@ -13,15 +17,36 @@ const postsPerTime = 10;
 let offset = 0;
 
 
-// Функция загрузки постов из VK api
+// Функция получает информацию о сообществе (берем название и фотку)
+function getVKCommunity() {
+    if (!localStorage.getItem('community')) {
+        VK.Api.call('groups.getById', {
+            access_token: _token,
+            group_id: community_id,
+            v: 5.131
+        }, (res) => {
+            if (res.response) {
+                community = {
+                    name: res.response[0].name,
+                    img: res.response[0].photo_100
+                };
+                localStorage.setItem('community', JSON.stringify(community));
+            }
+        });
+    } else {
+        community = localStorage.getItem('community')
+    }
+}
+
+// Функция загружает посты с VK api
 function getVKPosts() {
     // Используем Open api и VK.Api.call для авторизации и вызова методов VK api
     VK.Api.call('wall.get', {
-            owner_id: -103562966,
+            access_token: _token,
+            owner_id: -Math.abs(community_id),
             domain: 'dangrachev',
             count: postsPerTime,
             offset: offset,
-            access_token: _token,
             v: 5.131
         },
         (res) => {
@@ -31,9 +56,35 @@ function getVKPosts() {
                 // Проходимся по newPosts и создаем шаблон для каждого поста
                 const html = newPosts.map((post) => `
                   <div class="vk-widget_post">
-                    <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url}>
-                    <div class="vk-widget_post-title">${post.text}</div>
-                    <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                    <div class="vk-widget_community-info">
+                        <div class="vk-widget_community-img">
+                            <img src=${community.img} />
+                        </div>
+                        
+                        <div class="vk-widget_community-name">${community.name}</div>
+                        <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                    </div>
+                    
+                    <div class="vk-widget_post-content">
+                        <div class="vk-widget_post-message">${post.text}</div>
+                        
+                        <div class="vk-widget_post-media">
+                            ${post.attachments[0]['photo']} && 
+                                <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url} />
+                        </div>
+                    </div>
+                    
+                    <div class="vk-widget_post-info">
+                        <div>
+                            <span>❤ ${post.likes.count}</span>
+                            <span>💬 ${post.comments.count}</span>
+                            <span>⮌ ${post.reposts.count}</span>
+                        </div>
+                        
+                        <div>
+                            <span>👁 ${post.views.count}</span> 
+                        </div>
+                    </div>
                   </div>
                 `).join('');
 
@@ -51,8 +102,6 @@ function getVKPosts() {
                 observer.observe(lastPost);
             }
         });
-
-
 }
 
 
@@ -72,7 +121,7 @@ function savePostsToLocalstorage() {
     localStorage.setItem('offset', offset); //! сохраняем смещение в localStorage
 }
 
-// Загрузка кэшированных данных при перезагрузке страницы
+// Функция подгружает кэшированные посты
 function getCachedPosts() {
     // Получаем посты и семещение
     const cachedPosts = localStorage.getItem('posts');
@@ -84,9 +133,35 @@ function getCachedPosts() {
 
         const html = posts.map((post) => `
             <div class="vk-widget_post">
-                <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url}>
-                <div class="vk-widget_post-title">${post.text}</div>
-                <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                <div class="vk-widget_community-info">
+                    <div class="vk-widget_community-img">
+                        <img src=${community.img} />
+                    </div>
+                    
+                    <div class="vk-widget_community-name">${community.name}</div>
+                    <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                </div>
+                
+                <div class="vk-widget_post-content">
+                    <div class="vk-widget_post-message">${post.text}</div>
+                    
+                    <div class="vk-widget_post-media">
+                        ${post.attachments[0]['photo']} && 
+                            <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url} />
+                    </div>
+                </div>
+                
+                <div class="vk-widget_post-info">
+                    <div>
+                        <span>❤ ${post.likes.count}</span>
+                        <span>💬 ${post.comments.count}</span>
+                        <span>⮌ ${post.reposts.count}</span>
+                    </div>
+                    
+                    <div>
+                        <span>👁 ${post.views.count}</span> 
+                    </div>
+                </div>
             </div>
           `).join('');
 
@@ -102,9 +177,35 @@ function postsReplacement(endIndex) {
 
     const html = posts.map((post) => `
           <div class="vk-widget_post">
-            <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url}>
-            <div class="vk-widget_post-title">${post.text}</div>
-            <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                <div class="vk-widget_community-info">
+                    <div class="vk-widget_community-img">
+                        <img src=${community.img} />
+                    </div>
+                    
+                    <div class="vk-widget_community-name">${community.name}</div>
+                    <div class="vk-widget_post-date">${new Date(post.date * 1000).toLocaleDateString()}</div>
+                </div>
+                
+                <div class="vk-widget_post-content">
+                    <div class="vk-widget_post-message">${post.text}</div>
+                    
+                    <div class="vk-widget_post-media">
+                        ${post.attachments[0]['photo']} && 
+                            <img class="vk-widget_post-img" src=${post.attachments[0]['photo']?.sizes[4].url} />
+                    </div>
+                </div>
+                
+                <div class="vk-widget_post-info">
+                    <div>
+                        <span>❤ ${post.likes.count}</span>
+                        <span>💬 ${post.comments.count}</span>
+                        <span>⮌ ${post.reposts.count}</span>
+                    </div>
+                    
+                    <div>
+                        <span>👁 ${post.views.count}</span> 
+                    </div>
+                </div>
           </div>
         `).join('');
 
@@ -127,13 +228,14 @@ function checkLocalStorage() {
     }
 }
 
-
-
 function initWidget() {
+    // Получаем инфу о сообществе
+    getVKCommunity();
+
     // Загружаем посты из localstorage, если они есть или при перезагрузке страницы
     getCachedPosts();
 
-    // Подгружаем при первом рендере
+    // Подгружаем посты при первом рендере
     getVKPosts();
 
     // Проверяем localStorage с интервалом в 2 сек
