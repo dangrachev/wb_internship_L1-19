@@ -12,6 +12,8 @@ body {
 
     overflow: hidden;
     overflow-y: scroll;
+
+    background-color: #151515;
 }
 .vk-widget_posts {
     width: 100%;
@@ -45,7 +47,7 @@ body {
 .vk-widget_community-img img {
     width: 100px;
     height: 100px;
-    margin-right: 8px;
+    margin-right: 15px;
 
     border-radius: 50px;
 }
@@ -84,4 +86,8 @@ body {
 
     font-size: 22px;
     color: #828282;
+}
+
+.vk-widget_post-info div:first-child span {
+    margin-right: 8px;
 }
