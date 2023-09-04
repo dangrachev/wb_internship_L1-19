@@ -216,7 +216,8 @@ function postsReplacement(endIndex) {
 function checkLocalStorage() {
     const size = JSON.stringify(posts).length;
 
-    if (size > 5000000) {
+    // Примерный объем localstorage в chrome, взят из 18 задания
+    if (size > 4194304) {
         // Получаем индекс середины массива постов
         const endIndex = Math.round(posts.length / 2);
 
