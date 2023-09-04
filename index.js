@@ -34,7 +34,7 @@ function getVKCommunity() {
             }
         });
     } else {
-        community = localStorage.getItem('community')
+        community = JSON.parse(localStorage.getItem('community'));
     }
 }
 
